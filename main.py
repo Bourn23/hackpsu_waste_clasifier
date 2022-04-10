@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 import pandas as pd
 from flask import Flask, request, render_template
@@ -9,25 +10,22 @@ model = pickle.load(open('model.pkl', 'rb'))
 
 @app.route('/')
 def home():
+
     return render_template('index.html')
 
 @app.route('/predict',methods=['POST'])
 def predict():
-    feature_list = request.form.to_dict()
-    feature_list = list(feature_list.values())
-    feature_list = list(map(int, feature_list))
-    final_features = np.array(feature_list).reshape(1, 12) 
-    
-    prediction = model.predict(final_features)
-    output = int(prediction[0])
-    if output == 1:
-        text = ">50K"
-    else:
-        text = "<=50K"
-
-    return render_template('index.html', prediction_text='Employee Income is {}'.format(text))
-
+    # Get the image from post request
+    img = request.files['image'].read()
+    img = np.fromstring(img, dtype=np.uint8)
+    img = cv2.imdecode(img, cv2.IMREAD_UNCHANGED)
+    img = cv2.resize(img, (512, 512))
+    img = img.reshape(1, 512, 512, 3)
+    img = torch.from_numpy(img).double()
+    # Make prediction
+    pred = model.predict(img)
+    pred = np.argmax(pred, axis=1)
+    pred = pred[0]
 
 if __name__ == "__main__":
     app.run(debug=True)
-view raw
