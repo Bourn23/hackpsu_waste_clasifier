@@ -6,6 +6,8 @@ from flask import Flask, flash, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 import numpy as np
 import pickle
+from PIL import Image
+from io import BytesIO
 
 app = Flask(__name__)
 model = load_learner('.', 'base_model.pkl')
@@ -37,36 +39,17 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def index():
     return "Prediction of the Waste Class"
 
-@app.route('/predict',methods=['GET'])
+@app.route('/predict',methods=['POST'])
 def predict():
-
-    img = open_image('./glass2.jpg')
-
-    # resize image to 384*512
-    img = img.resize(size=(3, 384, 512))
-
+    # get image from json
+    image = request.get_data()
+    image = open_image(io.BytesIO(image))
+    image = image.resize((3, 384, 512))
     # predict the image
-    pred_class,pred_idx,outputs = model.predict(img)
+    pred_class,pred_idx,outputs = model.predict(image)
 
     # print the prediction
-    print(pred_class)
     return jsonify({"prediction":str(pred_class)})
-    # img = np.fromfile('glass2.jpg', dtype = np.uint8)
-    # # Get the image from post request
-    # # img = request.files['image'].read()
-    # # img = np.fromstring(img, dtype=np.uint8)
-    # # img = cv2.imdecode(img, cv2.IMREAD_UNCHANGED)
-    # # img = cv2.resize(img, (512, 512))
-    # print('image loaded')
-    # img = img.reshape(1, 512, 512, 3)
-    # img = torch.from_numpy(img).double()
-    # # Make prediction
-    # pred = model.predict(img)
-    # pred = np.argmax(pred, axis=1)
-    # pred = pred[0]
-    # pred = jsonify({'type_of_waste': pred})
-
-    # return pred
-
+    
 if __name__ == "__main__":
     app.run(host = '0.0.0.0', port = 80)
