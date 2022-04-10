@@ -1,0 +1,12 @@
+title: Dog Classifier
+description: Classify 120 breeds of dog
+about:
+
+  This is a dog classifier application.
+  Built by Bourn23®
+
+code: https://github.com/Bourn23/doggy_classifier
+
+sampleImages:
+  - name: huskey
+    url: https://upload.wikimedia.org/wikipedia/commons/b/ba/Lasagne_-_stonesoup.jpg
